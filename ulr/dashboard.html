@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - HealthBridge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <style>
+        /* Dashboard-specific styles */
+        .dashboard {
+            padding: 40px 0;
+            min-height: 70vh;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px 0;
+        }
+        
+        .sidebar-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-item:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+        
+        .sidebar-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .main-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #eff6ff 100%);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-section h2 {
+            margin-bottom: 10px;
+        }
+        
+        .welcome-section p {
+            color: var(--gray-color);
+            margin-bottom: 20px;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            border-top: 4px solid var(--primary-color);
+        }
+        
+        .stat-card.appointments {
+            border-top-color: var(--secondary-color);
+        }
+        
+        .stat-card.prescriptions {
+            border-top-color: var(--warning-color);
+        }
+        
+        .stat-card.doctors {
+            border-top-color: var(--danger-color);
+        }
+        
+        .stat-card h3 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            color: var(--gray-color);
+            font-size: 14px;
+        }
+        
+        .section-title {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        
+        /* Appointments Styles */
+        .appointments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .appointment-card {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            transition: var(--transition);
+        }
+        
+        .appointment-card:hover {
+            box-shadow: var(--box-shadow);
+        }
+        
+        .appointment-card.upcoming {
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .appointment-card.pending {
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .appointment-card.completed {
+            border-left: 4px solid var(--gray-color);
+        }
+        
+        .appointment-card.cancelled {
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .appointment-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-upcoming {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-completed {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        
+        .status-cancelled {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .appointment-details p {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .appointment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-color);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+        
+        /* Prescriptions Styles */
+        .prescription-card {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .prescription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .medicine-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        
+        .medicine-item:last-child {
+            border-bottom: none;
+        }
+        
+        .prescription-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Medical History Styles */
+        .history-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .history-timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e2e8f0;
+        }
+        
+        .history-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .history-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+        
+        .history-date {
+            font-weight: 500;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+        
+        .history-details {
+            background-color: #f8fafc;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        /* Profile Tab Styles */
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .profile-field {
+            margin-bottom: 20px;
+        }
+        
+        .profile-field label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+        
+        .profile-field .field-value {
+            padding: 12px 15px;
+            background-color: #f8fafc;
+            border-radius: var(--border-radius);
+            border: 1px solid #e2e8f0;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .profile-field input,
+        .profile-field select,
+        .profile-field textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--border-radius);
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        
+        .profile-field input:focus,
+        .profile-field select:focus,
+        .profile-field textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        
+        .profile-field textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .edit-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .profile-form-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .logout-btn {
+            margin-left: auto;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: flex;
+                overflow-x: auto;
+                padding: 0;
+            }
+            
+            .sidebar-item {
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            
+            .sidebar-item.active {
+                border-left: none;
+                border-bottom: 3px solid var(--primary-color);
+            }
+            
+            .profile-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .appointments-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .profile-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .profile-form-buttons {
+                width: 100%;
+            }
+            
+            .profile-form-buttons .btn {
+                flex: 1;
+            }
+            
+            .logout-btn {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .appointment-actions {
+                flex-direction: column;
+            }
+            
+            .appointment-actions .btn {
+                width: 100%;
+            }
+            
+            .prescription-actions {
+                flex-direction: column;
+            }
+            
+            .prescription-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bridge-medical"></i>
+                </div>
+                <div class="logo-text">Health<span>Bridge</span></div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#services">Services</a></li>
+                    <li><a href="index.html#doctors">Doctors</a></li>
+                    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="consult.html">Consult</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons">
+                <button class="btn btn-outline" id="login-btn">Login</button>
+                <button class="btn btn-primary" id="signup-btn">Sign Up</button>
+            </div>
+            <div class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bridge-medical"></i>
+                </div>
+                <div class="logo-text">Health<span>Bridge</span></div>
+            </div>
+            <div class="mobile-menu-close" id="mobile-menu-close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#doctors">Doctors</a></li>
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="consult.html">Consult</a></li>
+            </ul>
+        </nav>
+        <div class="mobile-auth-buttons">
+            <button class="btn btn-outline" id="mobile-login-btn">Login</button>
+            <button class="btn btn-primary" id="mobile-signup-btn">Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Patient Dashboard</h1>
+                <div>
+                    <button class="btn btn-primary" id="new-appointment-btn">New Appointment</button>
+                </div>
+            </div>
+            <div class="dashboard-container">
+                <div class="sidebar">
+                    <div class="sidebar-item active" data-tab="overview">
+                        <i class="fas fa-home"></i> Overview
+                    </div>
+                    <div class="sidebar-item" data-tab="appointments">
+                        <i class="fas fa-calendar-check"></i> My Appointments
+                    </div>
+                    <div class="sidebar-item" data-tab="prescriptions">
+                        <i class="fas fa-file-prescription"></i> Prescriptions
+                    </div>
+                    <div class="sidebar-item" data-tab="medical-history">
+                        <i class="fas fa-history"></i> Medical History
+                    </div>
+                    <div class="sidebar-item" data-tab="profile">
+                        <i class="fas fa-user-circle"></i> Profile Settings
+                    </div>
+                </div>
+                <div class="main-content">
+                    <!-- Overview Tab -->
+                    <div id="overview-tab" class="tab-content active">
+                        <div class="welcome-section">
+                            <h2>Welcome back, <span id="user-name">Loading...</span>!</h2>
+                            <p>Here's your health summary and upcoming appointments.</p>
+                            <button class="btn btn-primary" id="quick-consult-btn">Quick Consultation</button>
+                        </div>
+                        
+                        <div class="quick-stats">
+                            <div class="stat-card">
+                                <h3 id="upcoming-appointments-count">0</h3>
+                                <p>Upcoming Appointments</p>
+                            </div>
+                            <div class="stat-card appointments">
+                                <h3 id="total-appointments-count">0</h3>
+                                <p>Total Appointments</p>
+                            </div>
+                            <div class="stat-card prescriptions">
+                                <h3 id="active-prescriptions-count">0</h3>
+                                <p>Active Prescriptions</p>
+                            </div>
+                            <div class="stat-card doctors">
+                                <h3 id="doctors-count">0</h3>
+                                <p>Doctors Consulted</p>
+                            </div>
+                        </div>
+                        
+                        <div class="section-title">
+                            <h2>Upcoming Appointments</h2>
+                        </div>
+                        <div class="appointments-grid" id="upcoming-appointments">
+                            <!-- Upcoming appointments will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Appointments Tab -->
+                    <div id="appointments-tab" class="tab-content">
+                        <div class="section-title">
+                            <h2>My Appointments</h2>
+                            <p>View and manage your upcoming and past appointments</p>
+                        </div>
+                        
+                        <div class="filter-options" style="margin-bottom: 20px;">
+                            <button class="btn btn-outline active filter-btn" data-filter="all">All</button>
+                            <button class="btn btn-outline filter-btn" data-filter="upcoming">Upcoming</button>
+                            <button class="btn btn-outline filter-btn" data-filter="completed">Completed</button>
+                            <button class="btn btn-outline filter-btn" data-filter="cancelled">Cancelled</button>
+                        </div>
+                        
+                        <div id="appointments-container">
+                            <!-- All appointments will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Prescriptions Tab -->
+                    <div id="prescriptions-tab" class="tab-content">
+                        <div class="section-title">
+                            <h2>My Prescriptions</h2>
+                            <p>View and manage your digital prescriptions</p>
+                        </div>
+                        
+                        <div id="prescriptions-container">
+                            <!-- Prescriptions will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Medical History Tab -->
+                    <div id="medical-history-tab" class="tab-content">
+                        <div class="section-title">
+                            <h2>Medical History</h2>
+                            <p>Your complete medical history including past consultations, diagnoses, and treatments</p>
+                        </div>
+                        
+                        <div id="medical-history-container">
+                            <!-- Medical history will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Tab -->
+                    <div id="profile-tab" class="tab-content">
+                        <div class="profile-header">
+                            <div>
+                                <h2>Profile Settings</h2>
+                                <p>Manage your personal information and account settings</p>
+                            </div>
+                            <button class="btn btn-outline edit-profile-btn" id="edit-profile-btn">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </button>
+                        </div>
+                        
+                        <div class="profile-avatar" id="profile-avatar">
+                            <!-- Avatar initials will be loaded here -->
+                        </div>
+                        
+                        <form id="profile-form">
+                            <div class="profile-info">
+                                <div class="profile-field">
+                                    <label for="profile-name">Full Name</label>
+                                    <div class="field-value" id="profile-name-display">Loading...</div>
+                                    <input type="text" id="profile-name" class="profile-input" style="display: none;">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="profile-email">Email Address</label>
+                                    <div class="field-value" id="profile-email-display">Loading...</div>
+                                    <input type="email" id="profile-email" class="profile-input" style="display: none;">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="profile-phone">Phone Number</label>
+                                    <div class="field-value" id="profile-phone-display">Loading...</div>
+                                    <input type="tel" id="profile-phone" class="profile-input" style="display: none;">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="profile-dob">Date of Birth</label>
+                                    <div class="field-value" id="profile-dob-display">Loading...</div>
+                                    <input type="date" id="profile-dob" class="profile-input" style="display: none;">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="profile-gender">Gender</label>
+                                    <div class="field-value" id="profile-gender-display">Loading...</div>
+                                    <select id="profile-gender" class="profile-input" style="display: none;">
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                        <option value="prefer-not-to-say">Prefer not to say</option>
+                                    </select>
+                                </div>
+                                <div class="profile-field">
+                                    <label for="profile-blood-type">Blood Type</label>
+                                    <div class="field-value" id="profile-blood-type-display">Loading...</div>
+                                    <select id="profile-blood-type" class="profile-input" style="display: none;">
+                                        <option value="">Select Blood Type</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="profile-field">
+                                    <label for="profile-allergies">Allergies</label>
+                                    <div class="field-value" id="profile-allergies-display">Loading...</div>
+                                    <textarea id="profile-allergies" class="profile-input" style="display: none;"></textarea>
+                                </div>
+                                <div class="profile-field">
+                                    <label for="profile-medical-conditions">Medical Conditions</label>
+                                    <div class="field-value" id="profile-medical-conditions-display">Loading...</div>
+                                    <textarea id="profile-medical-conditions" class="profile-input" style="display: none;"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="profile-actions">
+                                <div class="profile-form-buttons" id="profile-form-buttons" style="display: none;">
+                                    <button type="button" class="btn btn-outline" id="cancel-edit-btn">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+                                </div>
+                                <button type="button" class="btn btn-outline logout-btn" id="logout-btn">Logout</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-about">
+                    <a href="index.html" class="footer-logo">Health<span>Bridge</span></a>
+                    <p>HealthBridge is a telemedicine platform dedicated to making healthcare accessible to everyone, everywhere.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="index.html#services">Services</a></li>
+                        <li><a href="index.html#doctors">Doctors</a></li>
+                        <li><a href="dashboard.html">Dashboard</a></li>
+                        <li><a href="consult.html">Consult</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Contact Us</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Health St, Medical City</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                    <p><i class="fas fa-envelope"></i> info@healthbridge.com</p>
+                    <p><i class="fas fa-clock"></i> 24/7 Customer Support</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 HealthBridge. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Appointment Modal -->
+    <div id="appointment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-close" id="close-appointment">&times;</div>
+            <h2 class="modal-title">Book New Appointment</h2>
+            <form id="appointment-form">
+                <div class="form-group">
+                    <label for="appointment-doctor">Select Doctor</label>
+                    <select id="appointment-doctor" required>
+                        <option value="">Choose a doctor</option>
+                        <option value="dr-johnson">Dr. Sarah Johnson (General Medicine)</option>
+                        <option value="dr-chen">Dr. Michael Chen (Cardiology)</option>
+                        <option value="dr-watson">Dr. Emily Watson (Dermatology)</option>
+                        <option value="dr-garcia">Dr. Robert Garcia (Pediatrics)</option>
+                        <option value="dr-smith">Dr. James Smith (Orthopedics)</option>
+                        <option value="dr-patel">Dr. Priya Patel (Gynecology)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointment-type">Appointment Type</label>
+                    <select id="appointment-type" required>
+                        <option value="">Select type</option>
+                        <option value="general">General Consultation</option>
+                        <option value="follow-up">Follow-up</option>
+                        <option value="specialist">Specialist Consultation</option>
+                        <option value="emergency">Emergency</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointment-date">Preferred Date</label>
+                    <input type="date" id="appointment-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointment-time">Preferred Time</label>
+                    <select id="appointment-time" required>
+                        <option value="">Select time slot</option>
+                        <option value="9:00">9:00 AM</option>
+                        <option value="10:30">10:30 AM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="15:30">3:30 PM</option>
+                        <option value="17:00">5:00 PM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointment-reason">Reason for Visit</label>
+                    <textarea id="appointment-reason" rows="3" placeholder="Briefly describe your symptoms or reason for consultation"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Book Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Prescription Details Modal -->
+    <div id="prescription-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-close" id="close-prescription-details">&times;</div>
+            <h2 class="modal-title">Prescription Details</h2>
+            <div id="prescription-details-content">
+                <!-- Prescription details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle toast-icon"></i>
+            <div class="toast-message">Profile updated successfully!</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Dashboard-specific JavaScript
+        
+        // DOM Elements
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const newAppointmentBtn = document.getElementById('new-appointment-btn');
+        const quickConsultBtn = document.getElementById('quick-consult-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const saveProfileBtn = document.getElementById('save-profile-btn');
+        const profileForm = document.getElementById('profile-form');
+        const profileFormButtons = document.getElementById('profile-form-buttons');
+        const appointmentModal = document.getElementById('appointment-modal');
+        const prescriptionDetailsModal = document.getElementById('prescription-details-modal');
+        const closeAppointmentBtn = document.getElementById('close-appointment');
+        const closePrescriptionDetailsBtn = document.getElementById('close-prescription-details');
+        const appointmentForm = document.getElementById('appointment-form');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        
+        // State
+        let currentUser = null;
+        let appointments = [];
+        let prescriptions = [];
+        let medicalHistory = [];
+        let isEditMode = false;
+        let originalProfileData = {};
+        let currentFilter = 'all';
+        
+        // Helper function to get user initials
+        function getInitials(name) {
+            if (!name) return '';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+        
+        // Initialize Dashboard
+        function initDashboard() {
+            // Check if user is logged in
+            const savedUser = localStorage.getItem('healthbridge_user');
+            if (!savedUser) {
+                // Redirect to home page if not logged in
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            currentUser = JSON.parse(savedUser);
+            
+            // FIRST: Update the welcome message immediately
+            document.getElementById('user-name').textContent = currentUser.name || 'User';
+            
+            // Load user data
+            loadUserProfile();
+            
+            // Load all data
+            loadAppointments();
+            loadPrescriptions();
+            loadMedicalHistory();
+            
+            // Update UI
+            updateAuthButtons();
+            updateDashboardStats();
+            
+            // Initialize modals
+            initModals();
+            
+            // Initialize profile editing
+            initProfileEditing();
+            
+            // Initialize filter buttons
+            initFilterButtons();
+            
+            console.log('Dashboard initialized for user:', currentUser.name);
+        }
+        
+        // Load User Profile
+        function loadUserProfile() {
+            if (!currentUser) return;
+            
+            // Update welcome message
+            document.getElementById('user-name').textContent = currentUser.name || 'User';
+            
+            // Update profile display with actual data
+            document.getElementById('profile-name-display').textContent = currentUser.name || 'Not set';
+            document.getElementById('profile-email-display').textContent = currentUser.email || 'Not set';
+            document.getElementById('profile-phone-display').textContent = currentUser.phone || 'Not set';
+            document.getElementById('profile-dob-display').textContent = formatDate(currentUser.dob) || 'Not set';
+            document.getElementById('profile-gender-display').textContent = formatGender(currentUser.gender) || 'Not set';
+            document.getElementById('profile-blood-type-display').textContent = currentUser.bloodType || 'Not set';
+            document.getElementById('profile-allergies-display').textContent = currentUser.allergies || 'None';
+            document.getElementById('profile-medical-conditions-display').textContent = currentUser.medicalConditions || 'None';
+            
+            // Update profile form inputs
+            document.getElementById('profile-name').value = currentUser.name || '';
+            document.getElementById('profile-email').value = currentUser.email || '';
+            document.getElementById('profile-phone').value = currentUser.phone || '';
+            document.getElementById('profile-dob').value = currentUser.dob || '';
+            document.getElementById('profile-gender').value = currentUser.gender || '';
+            document.getElementById('profile-blood-type').value = currentUser.bloodType || '';
+            document.getElementById('profile-allergies').value = currentUser.allergies || '';
+            document.getElementById('profile-medical-conditions').value = currentUser.medicalConditions || '';
+            
+            // Update avatar with user's initials
+            const avatar = document.getElementById('profile-avatar');
+            if (avatar) {
+                const initials = getInitials(currentUser.name);
+                avatar.textContent = initials || 'JD';
+            }
+            
+            // Store original data for cancel functionality
+            originalProfileData = {
+                name: currentUser.name,
+                email: currentUser.email,
+                phone: currentUser.phone,
+                dob: currentUser.dob,
+                gender: currentUser.gender,
+                bloodType: currentUser.bloodType,
+                allergies: currentUser.allergies,
+                medicalConditions: currentUser.medicalConditions
+            };
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Format gender for display
+        function formatGender(gender) {
+            if (!gender) return '';
+            const genderMap = {
+                'male': 'Male',
+                'female': 'Female',
+                'other': 'Other',
+                'prefer-not-to-say': 'Prefer not to say'
+            };
+            return genderMap[gender] || gender;
+        }
+        
+        // Load Appointments
+        function loadAppointments() {
+            // Load appointments from localStorage
+            const savedAppointments = localStorage.getItem('healthbridge_appointments');
+            if (savedAppointments) {
+                appointments = JSON.parse(savedAppointments);
+            }
+            
+            // Filter appointments for current user
+            const userAppointments = appointments.filter(app => app.userId === currentUser.id);
+            
+            // Sort by date (most recent first)
+            userAppointments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // Render appointments
+            renderAppointments(userAppointments);
+        }
+        
+        // Render Appointments
+        function renderAppointments(appointmentsArray) {
+            // Filter based on current filter
+            let filteredAppointments = appointmentsArray;
+            if (currentFilter !== 'all') {
+                filteredAppointments = appointmentsArray.filter(app => app.status === currentFilter);
+            }
+            
+            // Update counts
+            const upcomingCount = appointmentsArray.filter(app => app.status === 'upcoming').length;
+            const totalCount = appointmentsArray.length;
+            
+            document.getElementById('upcoming-appointments-count').textContent = upcomingCount;
+            document.getElementById('total-appointments-count').textContent = totalCount;
+            
+            // Get unique doctors count
+            const uniqueDoctors = [...new Set(appointmentsArray.map(app => app.doctor))];
+            document.getElementById('doctors-count').textContent = uniqueDoctors.length;
+            
+            // Render in overview tab
+            const upcomingAppointmentsContainer = document.getElementById('upcoming-appointments');
+            if (upcomingAppointmentsContainer) {
+                const upcomingAppointments = appointmentsArray.filter(app => app.status === 'upcoming');
+                renderAppointmentCards(upcomingAppointments, upcomingAppointmentsContainer);
+            }
+            
+            // Render in appointments tab
+            const appointmentsContainer = document.getElementById('appointments-container');
+            if (appointmentsContainer) {
+                renderAppointmentCards(filteredAppointments, appointmentsContainer, true);
+            }
+        }
+        
+        // Render Appointment Cards
+        function renderAppointmentCards(appointmentsArray, container, showAll = false) {
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (appointmentsArray.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>No appointments found</h3>
+                    <p>${showAll && currentFilter !== 'all' ? `No ${currentFilter} appointments` : 'Book your first appointment to get started'}</p>
+                    ${!showAll || currentFilter === 'all' ? '<button class="btn btn-primary" id="book-first-appointment">Book Appointment</button>' : ''}
+                `;
+                container.appendChild(emptyState);
+                
+                // Add event listener to the button
+                const bookFirstBtn = container.querySelector('#book-first-appointment');
+                if (bookFirstBtn) {
+                    bookFirstBtn.addEventListener('click', () => {
+                        openModal(appointmentModal);
+                    });
+                }
+                return;
+            }
+            
+            appointmentsArray.forEach(appointment => {
+                const appointmentCard = document.createElement('div');
+                appointmentCard.className = `appointment-card ${appointment.status}`;
+                
+                let statusClass = '';
+                let statusText = '';
+                
+                switch(appointment.status) {
+                    case 'upcoming':
+                        statusClass = 'status-upcoming';
+                        statusText = 'Upcoming';
+                        break;
+                    case 'pending':
+                        statusClass = 'status-pending';
+                        statusText = 'Pending';
+                        break;
+                    case 'completed':
+                        statusClass = 'status-completed';
+                        statusText = 'Completed';
+                        break;
+                    case 'cancelled':
+                        statusClass = 'status-cancelled';
+                        statusText = 'Cancelled';
+                        break;
+                    default:
+                        statusClass = 'status-pending';
+                        statusText = 'Pending';
+                }
+                
+                // Extract doctor name (remove specialty in parentheses)
+                const doctorName = appointment.doctor.split(' (')[0];
+                const doctorSpecialty = appointment.doctor.includes('(') 
+                    ? appointment.doctor.split('(')[1].replace(')', '') 
+                    : 'General Consultation';
+                
+                appointmentCard.innerHTML = `
+                    <div class="appointment-header">
+                        <h4>${doctorName}</h4>
+                        <span class="appointment-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="appointment-details">
+                        <p><i class="far fa-calendar"></i> ${appointment.date}</p>
+                        <p><i class="far fa-clock"></i> ${appointment.time}</p>
+                        <p><i class="fas fa-stethoscope"></i> ${doctorSpecialty}</p>
+                        ${appointment.type ? `<p><i class="fas fa-tag"></i> ${appointment.type}</p>` : ''}
+                        ${appointment.reason ? `<p><i class="fas fa-comment-medical"></i> ${appointment.reason.substring(0, 50)}${appointment.reason.length > 50 ? '...' : ''}</p>` : ''}
+                    </div>
+                    <div class="appointment-actions">
+                        ${appointment.status === 'upcoming' ? 
+                            `<button class="btn btn-primary join-call-btn" data-id="${appointment.id}">Join Call</button>
+                             <button class="btn btn-outline reschedule-btn" data-id="${appointment.id}">Reschedule</button>
+                             <button class="btn btn-outline cancel-btn" data-id="${appointment.id}">Cancel</button>` : 
+                            `<button class="btn btn-outline view-details-btn" data-id="${appointment.id}">View Details</button>`
+                        }
+                    </div>
+                `;
+                
+                container.appendChild(appointmentCard);
+            });
+            
+            // Add event listeners to buttons
+            addAppointmentEventListeners();
+        }
+        
+        // Load Prescriptions
+        function loadPrescriptions() {
+            // Load prescriptions from localStorage
+            const savedPrescriptions = localStorage.getItem('healthbridge_prescriptions');
+            if (savedPrescriptions) {
+                prescriptions = JSON.parse(savedPrescriptions);
+            } else {
+                // Create initial mock prescriptions
+                createInitialPrescriptions();
+            }
+            
+            // Filter prescriptions for current user
+            const userPrescriptions = prescriptions.filter(p => p.userId === currentUser.id);
+            
+            // Sort by date (most recent first)
+            userPrescriptions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Update count
+            const activePrescriptions = userPrescriptions.filter(p => p.status === 'Active');
+            document.getElementById('active-prescriptions-count').textContent = activePrescriptions.length;
+            
+            // Render prescriptions
+            renderPrescriptions(userPrescriptions);
+        }
+        
+        // Create initial prescriptions for new users
+        function createInitialPrescriptions() {
+            const initialPrescriptions = [
+                {
+                    id: 1,
+                    userId: currentUser.id,
+                    doctor: 'Dr. Sarah Johnson',
+                    date: new Date().toISOString().split('T')[0],
+                    validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    status: 'Active',
+                    medications: [
+                        { name: 'Amoxicillin', dosage: '500mg', frequency: 'Twice daily for 7 days', quantity: '30 tablets' },
+                        { name: 'Ibuprofen', dosage: '400mg', frequency: 'As needed for pain', quantity: '20 tablets' }
+                    ],
+                    instructions: 'Take with food. Complete the full course of antibiotics even if you feel better.'
+                },
+                {
+                    id: 2,
+                    userId: currentUser.id,
+                    doctor: 'Dr. Michael Chen',
+                    date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    validUntil: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    status: 'Completed',
+                    medications: [
+                        { name: 'Lisinopril', dosage: '10mg', frequency: 'Once daily', quantity: '30 tablets' }
+                    ],
+                    instructions: 'Take in the morning. Monitor blood pressure regularly.'
+                }
+            ];
+            
+            prescriptions = initialPrescriptions;
+            localStorage.setItem('healthbridge_prescriptions', JSON.stringify(prescriptions));
+        }
+        
+        // Render Prescriptions
+        function renderPrescriptions(prescriptionsArray) {
+            const container = document.getElementById('prescriptions-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (prescriptionsArray.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas fa-file-prescription"></i>
+                    <h3>No prescriptions found</h3>
+                    <p>Your prescriptions will appear here after consultations with doctors.</p>
+                `;
+                container.appendChild(emptyState);
+                return;
+            }
+            
+            prescriptionsArray.forEach(prescription => {
+                const prescriptionCard = document.createElement('div');
+                prescriptionCard.className = 'prescription-card';
+                
+                let statusClass = '';
+                if (prescription.status === 'Active') {
+                    statusClass = 'status-upcoming';
+                } else {
+                    statusClass = 'status-completed';
+                }
+                
+                const formattedDate = formatDate(prescription.date);
+                const formattedValidUntil = formatDate(prescription.validUntil);
+                
+                prescriptionCard.innerHTML = `
+                    <div class="prescription-header">
+                        <div>
+                            <h4>${prescription.doctor}</h4>
+                            <p><i class="far fa-calendar"></i> Issued: ${formattedDate}</p>
+                        </div>
+                        <span class="appointment-status ${statusClass}">${prescription.status}</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <h5>Medications:</h5>
+                        ${prescription.medications.map(med => `
+                            <div class="medicine-item">
+                                <div>
+                                    <strong>${med.name}</strong>
+                                    <p>${med.dosage}, ${med.frequency}</p>
+                                </div>
+                                <div>${med.quantity}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="prescription-actions">
+                        <button class="btn btn-primary view-prescription-btn" data-id="${prescription.id}">View Details</button>
+                        <button class="btn btn-outline download-prescription-btn" data-id="${prescription.id}">Download PDF</button>
+                        ${prescription.status === 'Active' ? 
+                            `<button class="btn btn-outline send-pharmacy-btn" data-id="${prescription.id}">Send to Pharmacy</button>` : 
+                            ''
+                        }
+                    </div>
+                `;
+                
+                container.appendChild(prescriptionCard);
+            });
+            
+            // Add event listeners to prescription buttons
+            addPrescriptionEventListeners();
+        }
+        
+        // Load Medical History
+        function loadMedicalHistory() {
+            // Load medical history from localStorage
+            const savedMedicalHistory = localStorage.getItem('healthbridge_medical_history');
+            if (savedMedicalHistory) {
+                medicalHistory = JSON.parse(savedMedicalHistory);
+            } else {
+                // Create initial medical history
+                createInitialMedicalHistory();
+            }
+            
+            // Filter medical history for current user
+            const userMedicalHistory = medicalHistory.filter(m => m.userId === currentUser.id);
+            
+            // Sort by date (most recent first)
+            userMedicalHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Render medical history
+            renderMedicalHistory(userMedicalHistory);
+        }
+        
+        // Create initial medical history for new users
+        function createInitialMedicalHistory() {
+            const initialMedicalHistory = [
+                {
+                    id: 1,
+                    userId: currentUser.id,
+                    date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    type: 'Consultation',
+                    doctor: 'Dr. Sarah Johnson',
+                    diagnosis: 'Sinus Infection',
+                    treatment: 'Antibiotics prescribed',
+                    notes: 'Patient presented with sinus pressure and congestion. Recommended rest and hydration.'
+                },
+                {
+                    id: 2,
+                    userId: currentUser.id,
+                    date: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    type: 'Check-up',
+                    doctor: 'Dr. Michael Chen',
+                    diagnosis: 'Hypertension',
+                    treatment: 'Blood pressure medication prescribed',
+                    notes: 'Regular blood pressure monitoring recommended. Follow-up in 3 months.'
+                }
+            ];
+            
+            medicalHistory = initialMedicalHistory;
+            localStorage.setItem('healthbridge_medical_history', JSON.stringify(medicalHistory));
+        }
+        
+        // Render Medical History
+        function renderMedicalHistory(medicalHistoryArray) {
+            const container = document.getElementById('medical-history-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (medicalHistoryArray.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas fa-history"></i>
+                    <h3>No medical history recorded yet</h3>
+                    <p>Your medical history will appear here after consultations with doctors.</p>
+                `;
+                container.appendChild(emptyState);
+                return;
+            }
+            
+            const timeline = document.createElement('div');
+            timeline.className = 'history-timeline';
+            
+            medicalHistoryArray.forEach(history => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const formattedDate = formatDate(history.date);
+                
+                historyItem.innerHTML = `
+                    <div class="history-date">${formattedDate}</div>
+                    <div><strong>${history.type}</strong> with ${history.doctor}</div>
+                    <div class="history-details">
+                        <p><strong>Diagnosis:</strong> ${history.diagnosis}</p>
+                        <p><strong>Treatment:</strong> ${history.treatment}</p>
+                        ${history.notes ? `<p><strong>Notes:</strong> ${history.notes}</p>` : ''}
+                    </div>
+                `;
+                
+                timeline.appendChild(historyItem);
+            });
+            
+            container.appendChild(timeline);
+        }
+        
+        // Update Dashboard Statistics
+        function updateDashboardStats() {
+            // This function is called after loading all data
+            // The stats are already updated in respective load functions
+        }
+        
+        // Update Authentication Buttons
+        function updateAuthButtons() {
+            if (currentUser) {
+                // User is logged in
+                const loginBtn = document.getElementById('login-btn');
+                const signupBtn = document.getElementById('signup-btn');
+                const mobileLoginBtn = document.getElementById('mobile-login-btn');
+                const mobileSignupBtn = document.getElementById('mobile-signup-btn');
+                
+                if (loginBtn) loginBtn.textContent = currentUser.name.split(' ')[0];
+                if (mobileLoginBtn) mobileLoginBtn.textContent = currentUser.name.split(' ')[0];
+                
+                if (signupBtn) {
+                    signupBtn.innerHTML = '<i class="fas fa-user-circle"></i> Account';
+                    signupBtn.classList.remove('btn-primary');
+                    signupBtn.classList.add('btn-outline');
+                }
+                
+                if (mobileSignupBtn) {
+                    mobileSignupBtn.innerHTML = '<i class="fas fa-user-circle"></i> Account';
+                    mobileSignupBtn.classList.remove('btn-primary');
+                    mobileSignupBtn.classList.add('btn-outline');
+                }
+            }
+        }
+        
+        // Initialize Modals
+        function initModals() {
+            // Set minimum date for appointment booking to today
+            const today = new Date().toISOString().split('T')[0];
+            const appointmentDateInput = document.getElementById('appointment-date');
+            if (appointmentDateInput) {
+                appointmentDateInput.min = today;
+                
+                // Set default to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                appointmentDateInput.value = tomorrow.toISOString().split('T')[0];
+            }
+            
+            // Event listeners for modals
+            newAppointmentBtn.addEventListener('click', () => {
+                openModal(appointmentModal);
+            });
+            
+            if (quickConsultBtn) {
+                quickConsultBtn.addEventListener('click', () => {
+                    openModal(appointmentModal);
+                });
+            }
+            
+            closeAppointmentBtn.addEventListener('click', () => {
+                closeModal(appointmentModal);
+            });
+            
+            closePrescriptionDetailsBtn.addEventListener('click', () => {
+                closeModal(prescriptionDetailsModal);
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    closeModal(appointmentModal);
+                    closeModal(prescriptionDetailsModal);
+                }
+            });
+            
+            // Appointment form submission
+            appointmentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                bookAppointment();
+            });
+        }
+        
+        // Book Appointment
+        function bookAppointment() {
+            const doctor = document.getElementById('appointment-doctor').value;
+            const type = document.getElementById('appointment-type').value;
+            const date = document.getElementById('appointment-date').value;
+            const time = document.getElementById('appointment-time').value;
+            const reason = document.getElementById('appointment-reason').value;
+            
+            if (!doctor || !type || !date || !time) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Format the date for display
+            const appointmentDate = new Date(date);
+            const formattedDate = appointmentDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Get selected doctor name
+            const doctorSelect = document.getElementById('appointment-doctor');
+            const doctorName = doctorSelect.options[doctorSelect.selectedIndex].text;
+            
+            // Create appointment object
+            const appointment = {
+                id: Date.now(),
+                userId: currentUser.id,
+                doctor: doctorName,
+                type: type,
+                date: formattedDate,
+                time: time,
+                reason: reason,
+                status: 'upcoming',
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            appointments.push(appointment);
+            localStorage.setItem('healthbridge_appointments', JSON.stringify(appointments));
+            
+            // Close modal
+            closeModal(appointmentModal);
+            
+            // Reset form
+            appointmentForm.reset();
+            
+            // Set default date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('appointment-date').value = tomorrow.toISOString().split('T')[0];
+            
+            // Reload appointments
+            loadAppointments();
+            
+            // Show success message
+            showNotification(`Appointment booked with ${doctorName.split(' (')[0]} on ${formattedDate} at ${time}`);
+        }
+        
+        // Initialize Profile Editing
+        function initProfileEditing() {
+            // Enter edit mode
+            editProfileBtn.addEventListener('click', () => {
+                enterEditMode();
+            });
+            
+            // Cancel edit mode
+            cancelEditBtn.addEventListener('click', () => {
+                exitEditMode();
+                // Restore original values
+                restoreOriginalProfileData();
+            });
+            
+            // Save profile changes
+            profileForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveProfileChanges();
+            });
+        }
+        
+        // Enter Edit Mode
+        function enterEditMode() {
+            isEditMode = true;
+            
+            // Hide display values
+            document.querySelectorAll('.field-value').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show input fields
+            document.querySelectorAll('.profile-input').forEach(el => {
+                el.style.display = 'block';
+            });
+            
+            // Hide edit button, show form buttons
+            editProfileBtn.style.display = 'none';
+            profileFormButtons.style.display = 'flex';
+        }
+        
+        // Exit Edit Mode
+        function exitEditMode() {
+            isEditMode = false;
+            
+            // Show display values
+            document.querySelectorAll('.field-value').forEach(el => {
+                el.style.display = 'flex';
+            });
+            
+            // Hide input fields
+            document.querySelectorAll('.profile-input').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show edit button, hide form buttons
+            editProfileBtn.style.display = 'flex';
+            profileFormButtons.style.display = 'none';
+        }
+        
+        // Restore Original Profile Data
+        function restoreOriginalProfileData() {
+            document.getElementById('profile-name').value = originalProfileData.name || '';
+            document.getElementById('profile-email').value = originalProfileData.email || '';
+            document.getElementById('profile-phone').value = originalProfileData.phone || '';
+            document.getElementById('profile-dob').value = originalProfileData.dob || '';
+            document.getElementById('profile-gender').value = originalProfileData.gender || '';
+            document.getElementById('profile-blood-type').value = originalProfileData.bloodType || '';
+            document.getElementById('profile-allergies').value = originalProfileData.allergies || '';
+            document.getElementById('profile-medical-conditions').value = originalProfileData.medicalConditions || '';
+        }
+        
+        // Save Profile Changes
+        function saveProfileChanges() {
+            // Get updated values
+            const updatedData = {
+                name: document.getElementById('profile-name').value.trim(),
+                email: document.getElementById('profile-email').value.trim(),
+                phone: document.getElementById('profile-phone').value.trim(),
+                dob: document.getElementById('profile-dob').value,
+                gender: document.getElementById('profile-gender').value,
+                bloodType: document.getElementById('profile-blood-type').value,
+                allergies: document.getElementById('profile-allergies').value.trim(),
+                medicalConditions: document.getElementById('profile-medical-conditions').value.trim()
+            };
+            
+            // Basic validation
+            if (!updatedData.name) {
+                showNotification('Full name is required', 'error');
+                return;
+            }
+            
+            if (!updatedData.email) {
+                showNotification('Email address is required', 'error');
+                return;
+            }
+            
+            // Check if email is already used by another user
+            if (updatedData.email !== currentUser.email) {
+                let users = JSON.parse(localStorage.getItem('healthbridge_users')) || [];
+                const emailExists = users.some(u => u.email === updatedData.email && u.id !== currentUser.id);
+                if (emailExists) {
+                    showNotification('This email is already registered to another account', 'error');
+                    return;
+                }
+            }
+            
+            // Update user profile
+            const success = updateUserProfile(updatedData);
+            
+            if (success) {
+                // Update display values
+                document.getElementById('profile-name-display').textContent = updatedData.name;
+                document.getElementById('profile-email-display').textContent = updatedData.email;
+                document.getElementById('profile-phone-display').textContent = updatedData.phone || 'Not set';
+                document.getElementById('profile-dob-display').textContent = formatDate(updatedData.dob) || 'Not set';
+                document.getElementById('profile-gender-display').textContent = formatGender(updatedData.gender) || 'Not set';
+                document.getElementById('profile-blood-type-display').textContent = updatedData.bloodType || 'Not set';
+                document.getElementById('profile-allergies-display').textContent = updatedData.allergies || 'None';
+                document.getElementById('profile-medical-conditions-display').textContent = updatedData.medicalConditions || 'None';
+                
+                // Update avatar
+                const avatar = document.getElementById('profile-avatar');
+                if (avatar) {
+                    const initials = getInitials(updatedData.name);
+                    avatar.textContent = initials;
+                }
+                
+                // Update welcome message
+                document.getElementById('user-name').textContent = updatedData.name;
+                
+                // Exit edit mode
+                exitEditMode();
+                
+                // Update original data
+                originalProfileData = { ...updatedData };
+                
+                // Update auth buttons
+                updateAuthButtons();
+                
+                // Show success message
+                showNotification('Profile updated successfully!');
+            } else {
+                showNotification('Failed to update profile. Please try again.', 'error');
+            }
+        }
+        
+        // Update User Profile
+        function updateUserProfile(updatedData) {
+            if (!currentUser) return false;
+            
+            // Update current user object
+            currentUser = { ...currentUser, ...updatedData };
+            
+            // Update in localStorage
+            localStorage.setItem('healthbridge_user', JSON.stringify(currentUser));
+            
+            // Update in users array
+            let users = JSON.parse(localStorage.getItem('healthbridge_users')) || [];
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = {
+                    ...users[userIndex],
+                    name: currentUser.name,
+                    email: currentUser.email,
+                    phone: currentUser.phone,
+                    dob: currentUser.dob,
+                    gender: currentUser.gender,
+                    bloodType: currentUser.bloodType,
+                    allergies: currentUser.allergies,
+                    medicalConditions: currentUser.medicalConditions
+                };
+                localStorage.setItem('healthbridge_users', JSON.stringify(users));
+            }
+            
+            return true;
+        }
+        
+        // Initialize Filter Buttons
+        function initFilterButtons() {
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Update current filter
+                    currentFilter = this.getAttribute('data-filter');
+                    
+                    // Reload appointments with new filter
+                    loadAppointments();
+                });
+            });
+        }
+        
+        // Add Appointment Event Listeners
+        function addAppointmentEventListeners() {
+            // Join call buttons
+            document.querySelectorAll('.join-call-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const appointmentId = this.getAttribute('data-id');
+                    // Redirect to consult page
+                    window.location.href = 'consult.html';
+                });
+            });
+            
+            // Reschedule buttons
+            document.querySelectorAll('.reschedule-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const appointmentId = this.getAttribute('data-id');
+                    showNotification('Reschedule functionality would be implemented here');
+                });
+            });
+            
+            // Cancel buttons
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const appointmentId = this.getAttribute('data-id');
+                    cancelAppointment(appointmentId);
+                });
+            });
+            
+            // View details buttons
+            document.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const appointmentId = this.getAttribute('data-id');
+                    showNotification('Appointment details would be shown here');
+                });
+            });
+        }
+        
+        // Cancel Appointment
+        function cancelAppointment(appointmentId) {
+            if (confirm('Are you sure you want to cancel this appointment?')) {
+                // Find appointment index
+                const appointmentIndex = appointments.findIndex(app => app.id == appointmentId);
+                
+                if (appointmentIndex !== -1) {
+                    // Update status
+                    appointments[appointmentIndex].status = 'cancelled';
+                    
+                    // Save to localStorage
+                    localStorage.setItem('healthbridge_appointments', JSON.stringify(appointments));
+                    
+                    // Reload appointments
+                    loadAppointments();
+                    
+                    // Show success message
+                    showNotification('Appointment cancelled successfully');
+                }
+            }
+        }
+        
+        // Add Prescription Event Listeners
+        function addPrescriptionEventListeners() {
+            // View prescription details buttons
+            document.querySelectorAll('.view-prescription-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const prescriptionId = this.getAttribute('data-id');
+                    viewPrescriptionDetails(prescriptionId);
+                });
+            });
+            
+            // Download prescription buttons
+            document.querySelectorAll('.download-prescription-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const prescriptionId = this.getAttribute('data-id');
+                    showNotification('Prescription download functionality would be implemented here');
+                });
+            });
+            
+            // Send to pharmacy buttons
+            document.querySelectorAll('.send-pharmacy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const prescriptionId = this.getAttribute('data-id');
+                    showNotification('Prescription would be sent to your preferred pharmacy');
+                });
+            });
+        }
+        
+        // View Prescription Details
+        function viewPrescriptionDetails(prescriptionId) {
+            const prescription = prescriptions.find(p => p.id == prescriptionId);
+            
+            if (!prescription) {
+                showNotification('Prescription not found', 'error');
+                return;
+            }
+            
+            const formattedDate = formatDate(prescription.date);
+            const formattedValidUntil = formatDate(prescription.validUntil);
+            
+            const content = document.getElementById('prescription-details-content');
+            content.innerHTML = `
+                <div class="prescription-card" style="border: none; padding: 0; margin: 0;">
+                    <div class="prescription-header">
+                        <div>
+                            <h4>${prescription.doctor}</h4>
+                            <p><i class="far fa-calendar"></i> Issued: ${formattedDate}</p>
+                            <p><i class="far fa-calendar-check"></i> Valid until: ${formattedValidUntil}</p>
+                            <p><i class="fas fa-circle" style="color: ${prescription.status === 'Active' ? '#10b981' : '#64748b'}; font-size: 12px;"></i> Status: ${prescription.status}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h5>Medications:</h5>
+                        ${prescription.medications.map(med => `
+                            <div class="medicine-item">
+                                <div>
+                                    <strong>${med.name}</strong>
+                                    <p>${med.dosage}, ${med.frequency}</p>
+                                </div>
+                                <div>${med.quantity}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${prescription.instructions ? `
+                        <div style="margin-top: 20px;">
+                            <h5>Instructions:</h5>
+                            <p>${prescription.instructions}</p>
+                        </div>
+                    ` : ''}
+                    <div class="prescription-actions" style="margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="window.print()">Print Prescription</button>
+                        <button class="btn btn-outline" id="close-prescription-modal">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listener to close button
+            const closeBtn = content.querySelector('#close-prescription-modal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    closeModal(prescriptionDetailsModal);
+                });
+            }
+            
+            openModal(prescriptionDetailsModal);
+        }
+        
+        // Tab Switching Functionality
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active sidebar item
+                sidebarItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show selected tab content
+                tabContents.forEach(tab => tab.classList.remove('active'));
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+                
+                // If switching to profile tab, exit edit mode
+                if (tabId === 'profile' && isEditMode) {
+                    exitEditMode();
+                }
+            });
+        });
+        
+        // Logout Functionality
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    localStorage.removeItem('healthbridge_user');
+                    window.location.href = 'index.html';
+                }
+            });
+        }
+        
+        // Modal Functions
+        function openModal(modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const toast = document.getElementById('notification-toast');
+            const toastIcon = toast.querySelector('.toast-icon');
+            const toastMessage = toast.querySelector('.toast-message');
+            
+            // Set message
+            toastMessage.textContent = message;
+            
+            // Set icon and color based on type
+            if (type === 'error') {
+                toastIcon.className = 'fas fa-exclamation-circle toast-icon';
+                toast.style.backgroundColor = 'var(--danger-color)';
+            } else if (type === 'warning') {
+                toastIcon.className = 'fas fa-exclamation-triangle toast-icon';
+                toast.style.backgroundColor = 'var(--warning-color)';
+            } else {
+                toastIcon.className = 'fas fa-check-circle toast-icon';
+                toast.style.backgroundColor = 'var(--secondary-color)';
+            }
+            
+            // Show toast
+            toast.classList.add('active');
+            
+            // Hide toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 5000);
+        }
+        
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

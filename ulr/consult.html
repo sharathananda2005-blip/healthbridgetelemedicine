@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Consultation - HealthBridge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <style>
+        /* Consultation-specific styles */
+        .consultation {
+            padding: 40px 0;
+            min-height: 70vh;
+        }
+        
+        .consultation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .video-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+            height: 600px;
+        }
+        
+        .video-main {
+            background-color: #1e293b;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-placeholder {
+            color: white;
+            text-align: center;
+        }
+        
+        .video-placeholder i {
+            font-size: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .video-placeholder h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .video-placeholder p {
+            opacity: 0.7;
+        }
+        
+        .video-local {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 120px;
+            border-radius: 10px;
+            border: 2px solid white;
+            background-color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .video-local i {
+            font-size: 30px;
+        }
+        
+        .video-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background-color: white;
+            color: var(--dark-color);
+            font-size: 18px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-btn:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .control-btn.muted {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .control-btn.end-call {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .control-btn.end-call:hover {
+            background-color: #dc2626;
+        }
+        
+        .video-sidebar {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .consultation-details h3 {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .consultation-details p {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .consultation-details i {
+            color: var(--primary-color);
+            width: 20px;
+            margin-top: 3px;
+        }
+        
+        .consultation-notes {
+            margin-top: 30px;
+        }
+        
+        .consultation-notes h4 {
+            margin-bottom: 10px;
+        }
+        
+        .consultation-notes textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--border-radius);
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 150px;
+            margin-bottom: 15px;
+        }
+        
+        .consultation-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .participants {
+            margin-top: 30px;
+        }
+        
+        .participants h4 {
+            margin-bottom: 15px;
+        }
+        
+        .participant-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            background-color: #f8fafc;
+            margin-bottom: 10px;
+        }
+        
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .participant-info h5 {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .participant-info p {
+            font-size: 12px;
+            color: var(--gray-color);
+        }
+        
+        .participant-status {
+            margin-left: auto;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+        }
+        
+        .prescription-modal .modal-content {
+            max-width: 700px;
+        }
+        
+        .prescription-form .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .add-medicine-btn {
+            margin-bottom: 20px;
+        }
+        
+        .medicine-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8fafc;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+        }
+        
+        .remove-medicine {
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        @media (max-width: 992px) {
+            .video-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .video-main {
+                height: 400px;
+            }
+            
+            .video-local {
+                width: 120px;
+                height: 90px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .consultation-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .video-controls {
+                bottom: 10px;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+            
+            .prescription-form .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bridge-medical"></i>
+                </div>
+                <div class="logo-text">Health<span>Bridge</span></div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#services">Services</a></li>
+                    <li><a href="index.html#doctors">Doctors</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="consult.html" class="active">Consult</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons">
+                <button class="btn btn-outline" id="login-btn">Login</button>
+                <button class="btn btn-primary" id="signup-btn">Sign Up</button>
+            </div>
+            <div class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bridge-medical"></i>
+                </div>
+                <div class="logo-text">Health<span>Bridge</span></div>
+            </div>
+            <div class="mobile-menu-close" id="mobile-menu-close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#doctors">Doctors</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="consult.html" class="active">Consult</a></li>
+            </ul>
+        </nav>
+        <div class="mobile-auth-buttons">
+            <button class="btn btn-outline" id="mobile-login-btn">Login</button>
+            <button class="btn btn-primary" id="mobile-signup-btn">Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Consultation -->
+    <section class="consultation">
+        <div class="container">
+            <div class="consultation-header">
+                <h1>Video Consultation</h1>
+                <div id="call-status">
+                    <span class="appointment-status status-upcoming">Connecting...</span>
+                </div>
+            </div>
+            
+            <div class="video-container">
+                <div class="video-main">
+                    <div class="video-placeholder" id="remote-video-placeholder">
+                        <i class="fas fa-user-md"></i>
+                        <h3>Waiting for doctor to join</h3>
+                        <p>The consultation will begin when the doctor joins the call</p>
+                    </div>
+                    
+                    <div class="video-local" id="local-video">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                    <div class="video-controls">
+                        <button class="control-btn" id="toggle-video">
+                            <i class="fas fa-video"></i>
+                        </button>
+                        <button class="control-btn" id="toggle-audio">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="control-btn end-call" id="end-call">
+                            <i class="fas fa-phone-slash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="video-sidebar">
+                    <div class="consultation-details">
+                        <h3>Consultation Details</h3>
+                        <p>
+                            <i class="fas fa-user-md"></i>
+                            <span><strong>Doctor:</strong> Dr. Sarah Johnson</span>
+                        </p>
+                        <p>
+                            <i class="fas fa-stethoscope"></i>
+                            <span><strong>Specialty:</strong> General Medicine</span>
+                        </p>
+                        <p>
+                            <i class="far fa-calendar"></i>
+                            <span><strong>Date:</strong> Today, June 15, 2023</span>
+                        </p>
+                        <p>
+                            <i class="far fa-clock"></i>
+                            <span><strong>Time:</strong> 2:00 PM - 2:30 PM</span>
+                        </p>
+                        <p>
+                            <i class="fas fa-comment-medical"></i>
+                            <span><strong>Reason:</strong> Follow-up for sinus infection</span>
+                        </p>
+                    </div>
+                    
+                    <div class="consultation-notes">
+                        <h4>Consultation Notes</h4>
+                        <textarea id="consultation-notes" placeholder="Doctor's notes will appear here during the consultation..."></textarea>
+                        <div class="consultation-actions">
+                            <button class="btn btn-outline" id="save-notes-btn">Save Notes</button>
+                            <button class="btn btn-primary" id="prescribe-btn">Issue Prescription</button>
+                        </div>
+                    </div>
+                    
+                    <div class="participants">
+                        <h4>Participants</h4>
+                        <div class="participant-item">
+                            <div class="participant-avatar">JD</div>
+                            <div class="participant-info">
+                                <h5>John Doe</h5>
+                                <p>Patient</p>
+                            </div>
+                            <div class="participant-status"></div>
+                        </div>
+                        <div class="participant-item">
+                            <div class="participant-avatar">SJ</div>
+                            <div class="participant-info">
+                                <h5>Dr. Sarah Johnson</h5>
+                                <p>General Medicine</p>
+                            </div>
+                            <div class="participant-status offline"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-about">
+                    <a href="index.html" class="footer-logo">Health<span>Bridge</span></a>
+                    <p>HealthBridge is a telemedicine platform dedicated to making healthcare accessible to everyone, everywhere.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="index.html#services">Services</a></li>
+                        <li><a href="index.html#doctors">Doctors</a></li>
+                        <li><a href="dashboard.html">Dashboard</a></li>
+                        <li><a href="consult.html">Consult</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Contact Us</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Health St, Medical City</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                    <p><i class="fas fa-envelope"></i> info@healthbridge.com</p>
+                    <p><i class="fas fa-clock"></i> 24/7 Customer Support</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 HealthBridge. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Prescription Modal -->
+    <div id="prescription-modal" class="modal prescription-modal">
+        <div class="modal-content">
+            <div class="modal-close" id="close-prescription">&times;</div>
+            <h2 class="modal-title">Issue Prescription</h2>
+            <form id="prescription-form">
+                <div class="form-group">
+                    <label for="patient-name">Patient Name</label>
+                    <input type="text" id="patient-name" value="John Doe" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="prescription-date">Date</label>
+                    <input type="date" id="prescription-date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Medications</label>
+                    <div id="medications-list">
+                        <!-- Medications will be added here -->
+                    </div>
+                    <button type="button" class="btn btn-outline add-medicine-btn" id="add-medicine-btn">
+                        <i class="fas fa-plus"></i> Add Medication
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="prescription-instructions">Additional Instructions</label>
+                    <textarea id="prescription-instructions" rows="3" placeholder="Any additional instructions for the patient..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Issue Prescription</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Consultation End Modal -->
+    <div id="end-consultation-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">End Consultation</h2>
+            <p>Are you sure you want to end the consultation? This action cannot be undone.</p>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-outline" id="cancel-end-btn" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" id="confirm-end-btn" style="flex: 1;">End Consultation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle toast-icon"></i>
+            <div class="toast-message">Prescription issued successfully!</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Consultation-specific JavaScript
+        
+        // DOM Elements
+        const toggleVideoBtn = document.getElementById('toggle-video');
+        const toggleAudioBtn = document.getElementById('toggle-audio');
+        const endCallBtn = document.getElementById('end-call');
+        const prescribeBtn = document.getElementById('prescribe-btn');
+        const saveNotesBtn = document.getElementById('save-notes-btn');
+        const consultationNotes = document.getElementById('consultation-notes');
+        const callStatus = document.getElementById('call-status');
+        const prescriptionModal = document.getElementById('prescription-modal');
+        const endConsultationModal = document.getElementById('end-consultation-modal');
+        const closePrescriptionBtn = document.getElementById('close-prescription');
+        const cancelEndBtn = document.getElementById('cancel-end-btn');
+        const confirmEndBtn = document.getElementById('confirm-end-btn');
+        const prescriptionForm = document.getElementById('prescription-form');
+        const addMedicineBtn = document.getElementById('add-medicine-btn');
+        const medicationsList = document.getElementById('medications-list');
+        
+        // State
+        let videoEnabled = true;
+        let audioEnabled = true;
+        let consultationActive = false;
+        let doctorJoined = false;
+        let consultationTimer = null;
+        let consultationStartTime = null;
+        let medicationCounter = 0;
+        
+        function initConsultation() {
+            // Check if user is logged in
+            const savedUser = localStorage.getItem('healthbridge_user');
+            if (!savedUser) {
+                // Redirect to home page if not logged in
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Update auth buttons
+            updateAuthButtons();
+            
+            // Set prescription date to today
+            const today = new Date().toISOString().split('T')[0];
+            const prescriptionDateInput = document.getElementById('prescription-date');
+            if (prescriptionDateInput) {
+                prescriptionDateInput.value = today;
+                prescriptionDateInput.max = today;
+            }
+            
+            // Initialize medication list with one empty medication
+            addMedication();
+            
+            // Start the consultation simulation
+            startConsultation();
+            
+            console.log('Consultation initialized');
+        }
+        
+        function updateAuthButtons() {
+            const savedUser = localStorage.getItem('healthbridge_user');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                const loginBtn = document.getElementById('login-btn');
+                const signupBtn = document.getElementById('signup-btn');
+                const mobileLoginBtn = document.getElementById('mobile-login-btn');
+                const mobileSignupBtn = document.getElementById('mobile-signup-btn');
+                
+                if (loginBtn) loginBtn.textContent = user.name.split(' ')[0];
+                if (mobileLoginBtn) mobileLoginBtn.textContent = user.name.split(' ')[0];
+                
+                if (signupBtn) {
+                    signupBtn.innerHTML = '<i class="fas fa-user-circle"></i> Account';
+                    signupBtn.classList.remove('btn-primary');
+                    signupBtn.classList.add('btn-outline');
+                }
+                
+                if (mobileSignupBtn) {
+                    mobileSignupBtn.innerHTML = '<i class="fas fa-user-circle"></i> Account';
+                    mobileSignupBtn.classList.remove('btn-primary');
+                    mobileSignupBtn.classList.add('btn-outline');
+                }
+            }
+        }
+        
+        function startConsultation() {
+            // Simulate doctor joining after 3 seconds
+            setTimeout(() => {
+                doctorJoined = true;
+                consultationActive = true;
+                consultationStartTime = new Date();
+                
+                // Update UI
+                const remoteVideoPlaceholder = document.getElementById('remote-video-placeholder');
+                if (remoteVideoPlaceholder) {
+                    remoteVideoPlaceholder.innerHTML = `
+                        <i class="fas fa-user-md" style="color: var(--secondary-color);"></i>
+                        <h3>Dr. Sarah Johnson</h3>
+                        <p>General Medicine Specialist</p>
+                    `;
+                }
+                
+                // Update call status
+                if (callStatus) {
+                    callStatus.innerHTML = '<span class="appointment-status status-upcoming">Connected</span>';
+                }
+                
+                // Update participant status
+                const doctorStatus = document.querySelector('.participant-item:nth-child(2) .participant-status');
+                if (doctorStatus) {
+                    doctorStatus.classList.remove('offline');
+                    doctorStatus.style.backgroundColor = 'var(--secondary-color)';
+                }
+                
+                // Start consultation timer
+                startConsultationTimer();
+                
+                // Simulate doctor typing notes
+                simulateDoctorNotes();
+                
+                console.log('Doctor joined the consultation');
+            }, 3000);
+        }
+        
+        function startConsultationTimer() {
+            let seconds = 0;
+            consultationTimer = setInterval(() => {
+                seconds++;
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                
+                // Update call status with timer
+                if (callStatus) {
+                    callStatus.innerHTML = `
+                        <span class="appointment-status status-upcoming">
+                            Connected ${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}
+                        </span>
+                    `;
+                }
+            }, 1000);
+        }
+        
+        function simulateDoctorNotes() {
+            // Simulate doctor adding notes after 5 seconds
+            setTimeout(() => {
+                const notes = [
+                    "Patient reports improvement in sinus symptoms since last visit.",
+                    "Nasal congestion has decreased significantly.",
+                    "No fever or headache reported.",
+                    "Patient is tolerating medication well with no side effects."
+                ];
+                
+                let noteIndex = 0;
+                const noteInterval = setInterval(() => {
+                    if (noteIndex < notes.length) {
+                        if (consultationNotes.value) {
+                            consultationNotes.value += '\n' + notes[noteIndex];
+                        } else {
+                            consultationNotes.value = notes[noteIndex];
+                        }
+                        noteIndex++;
+                    } else {
+                        clearInterval(noteInterval);
+                    }
+                }, 2000);
+            }, 5000);
+        }
+        
+        // Toggle video
+        toggleVideoBtn.addEventListener('click', () => {
+            videoEnabled = !videoEnabled;
+            const icon = toggleVideoBtn.querySelector('i');
+            
+            if (videoEnabled) {
+                icon.classList.remove('fa-video-slash');
+                icon.classList.add('fa-video');
+                toggleVideoBtn.classList.remove('muted');
+            } else {
+                icon.classList.remove('fa-video');
+                icon.classList.add('fa-video-slash');
+                toggleVideoBtn.classList.add('muted');
+            }
+        });
+        
+        // Toggle audio
+        toggleAudioBtn.addEventListener('click', () => {
+            audioEnabled = !audioEnabled;
+            const icon = toggleAudioBtn.querySelector('i');
+            
+            if (audioEnabled) {
+                icon.classList.remove('fa-microphone-slash');
+                icon.classList.add('fa-microphone');
+                toggleAudioBtn.classList.remove('muted');
+            } else {
+                icon.classList.remove('fa-microphone');
+                icon.classList.add('fa-microphone-slash');
+                toggleAudioBtn.classList.add('muted');
+            }
+        });
+        
+        // End call
+        endCallBtn.addEventListener('click', () => {
+            openModal(endConsultationModal);
+        });
+        
+        // Prescribe button
+        prescribeBtn.addEventListener('click', () => {
+            openModal(prescriptionModal);
+        });
+        
+        // Save notes button
+        saveNotesBtn.addEventListener('click', () => {
+            if (consultationNotes.value.trim()) {
+                // In a real app, this would save to the server
+                alert('Notes saved successfully!');
+            } else {
+                alert('Please add some notes before saving.');
+            }
+        });
+        
+        // Modal functions
+        function openModal(modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close prescription modal
+        closePrescriptionBtn.addEventListener('click', () => {
+            closeModal(prescriptionModal);
+        });
+        
+        // Cancel end consultation
+        cancelEndBtn.addEventListener('click', () => {
+            closeModal(endConsultationModal);
+        });
+        
+        // Confirm end consultation
+        confirmEndBtn.addEventListener('click', () => {
+            // Clear timer
+            if (consultationTimer) {
+                clearInterval(consultationTimer);
+            }
+            
+            // Close modal
+            closeModal(endConsultationModal);
+            
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeModal(prescriptionModal);
+                closeModal(endConsultationModal);
+            }
+        });
+        
+        // Add medication
+        addMedicineBtn.addEventListener('click', addMedication);
+        
+        function addMedication() {
+            medicationCounter++;
+            const medicationId = `medication-${medicationCounter}`;
+            
+            const medicationItem = document.createElement('div');
+            medicationItem.className = 'medicine-item';
+            medicationItem.id = medicationId;
+            
+            medicationItem.innerHTML = `
+                <div style="flex: 1;">
+                    <input type="text" placeholder="Medication name" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                </div>
+                <div style="width: 100px;">
+                    <input type="text" placeholder="Dosage" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                </div>
+                <div style="width: 150px;">
+                    <input type="text" placeholder="Frequency" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                </div>
+                <div style="width: 100px;">
+                    <input type="text" placeholder="Quantity" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                </div>
+                <div class="remove-medicine" data-id="${medicationId}">
+                    <i class="fas fa-times"></i>
+                </div>
+            `;
+            
+            medicationsList.appendChild(medicationItem);
+            
+            // Add event listener to remove button
+            const removeBtn = medicationItem.querySelector('.remove-medicine');
+            removeBtn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const item = document.getElementById(id);
+                if (item) {
+                    item.remove();
+                }
+            });
+        }
+        
+        // Prescription form submission
+        prescriptionForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Collect medication data
+            const medications = [];
+            const medicationItems = medicationsList.querySelectorAll('.medicine-item');
+            
+            medicationItems.forEach(item => {
+                const inputs = item.querySelectorAll('input');
+                if (inputs.length >= 4) {
+                    const name = inputs[0].value.trim();
+                    const dosage = inputs[1].value.trim();
+                    const frequency = inputs[2].value.trim();
+                    const quantity = inputs[3].value.trim();
+                    
+                    if (name && dosage && frequency && quantity) {
+                        medications.push({
+                            name,
+                            dosage,
+                            frequency,
+                            quantity
+                        });
+                    }
+                }
+            });
+            
+            if (medications.length === 0) {
+                alert('Please add at least one medication');
+                return;
+            }
+            
+            // Get form data
+            const patientName = document.getElementById('patient-name').value;
+            const date = document.getElementById('prescription-date').value;
+            const instructions = document.getElementById('prescription-instructions').value;
+            
+            // Format date for display
+            const prescriptionDate = new Date(date);
+            const formattedDate = prescriptionDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // In a real app, this would save to the server
+            console.log('Prescription issued:', {
+                patientName,
+                date: formattedDate,
+                medications,
+                instructions
+            });
+            
+            // Close modal
+            closeModal(prescriptionModal);
+            
+            // Show success message
+            const toast = document.getElementById('notification-toast');
+            const toastMessage = toast.querySelector('.toast-message');
+            toastMessage.textContent = 'Prescription issued successfully!';
+            toast.classList.add('active');
+            
+            // Hide toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 5000);
+            
+            // Reset form
+            prescriptionForm.reset();
+            
+            // Set date back to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('prescription-date').value = today;
+            
+            // Clear medications and add one empty
+            medicationsList.innerHTML = '';
+            medicationCounter = 0;
+            addMedication();
+        });
+        
+        // Initialize consultation when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initConsultation);
+    </script>
+</body>
+</html>
